@@ -10,133 +10,70 @@ my @POSArray0;
 my $filename = $ARGV[0];
 
 open(my $fh, "<", $filename) or die $!;
-while(my $line = <$fh>){
-	chomp $line;
-	@lineArray = ($line =~ /\w+\//g);
-	push(@textArray0, @lineArray);
-	@lineArray2 = ($line =~ /\/\w+/g);
-	push(@POSArray0, @lineArray2);
-	#@lineArray = split(/\w+\/NNP/, $line);
-
-}
-
-my $temp;
-my @POSArray;
-my @tempArray;
-my @textArray;
-my @tempArray2;
-
-for(my $x=0;$x<@textArray0;$x++){
-	@tempArray = ($POSArray0[$x] =~ /\w+/g);
-	push(@POSArray, @tempArray);
-	@tempArray = ($textArray0[$x] =~ /\w+/g);
-	push(@textArray, @tempArray);
-	#might have to improve hash key list to exclude some shit
-}
-
-close $fh;
-
-# for(my $x=0;$x<@textArray;$x++){
-	# print "$x: $textArray[$x]\n";
-	# print "$x: $POSArray[$x]\n";
-# }
-
-my %hash;
-my @pushArray = ();
-# for(my $x=0;$x<@textArray;$x++){
-	# if(exists $hash{$textArray[$x]}){
-		# $hash{$textArray[$x]} .= $POSArray[$x];
-	# }
-	# else{
-		# $hash{$textArray[$x]} .= $POSArray[$x];
-	# }
-# }
-
-for(my $x=0;$x<@textArray;$x++){
-
-	if(exists $hash{$POSArray[$x]}){
-		push (@{$hash{$POSArray[$x]}}, $textArray[$x]);
-	}
-	else{
-		push (@{$hash{$POSArray[$x]}}, @pushArray);
-		push (@{$hash{$POSArray[$x]}}, $textArray[$x]);;
-	}
-}
-
-delete $hash{'10th'};
-delete $hash{'2'};
-delete $hash{'4'};
-delete $hash{'8'};
-delete $hash{'16'};
-delete $hash{'investors'};
-delete $hash{'McGraw'};
-delete $hash{'Contra'};
-delete $hash{'Firestone'};
-delete $hash{'winter'};
-
-my @testArray;
-@lineArray = ();
-$filename = $ARGV[1];
-
-open(my $fh2, "<", $filename) or die $!;
-while(my $line = <$fh2>){
-	chomp $line;
-	@lineArray = ($line =~ /\w+|[_.,!?"':;\+\-\*]/g);
-	push(@testArray, @lineArray);
-}
-close $fh2;
-print scalar @testArray;
-my @keyList = keys %hash;
-my $counter=0;
-for(my $y=0; $y<@testArray; $y++){
-	my $test = $testArray[$y];
-	#print "$counter: $test\n";
-	#$counter++;
-LABEL:	for(my $z=0; $z<@keyList;$z++){
-		my $size = scalar @{$hash{$keyList[$z]}};
-		for(my $x=0;$x<$size;$x++){
-			if($test eq $hash{$keyList[$z]}[$x]){
-				print "$test/$keyList[$z]\n";
-				last LABEL;
-				#NEED ELSE STATEMENT TO HANDLE ANYTHING NOT IN TRAINING DATASET
+		while(my $line = <$fh>){
+			chomp $line;
+			@lineArray = split/!\w+\//, $line;
+			push(@textArray0, @lineArray);
+			@lineArray2 = split/!\/\w+/, $line;
+			push(@POSArray0, @lineArray2);
 			}
-		}
-	}	
-}
+			my $temp;
+			my @tempArray;
+			my @textArray;
 
-# foreach my $key(keys %hash){
-	# print "$key\n";
-# }
+			for(my $x=0;$x<@textArray0;$x++){
+					@tempArray = ($textArray0[$x] =~ /\w+\/\w+/g);
+					push(@textArray, @tempArray);
+					}	
 
-# my $size = scalar @{$hash{'CD'}};
-# print $size;
+					close $fh;
 
-#print "$testArray[0] $testArray[1] $testArray[2] $testArray[3] $testArray[4] $testArray[5] $testArray[6] $testArray[7] $testArray[8]";
-# print "$_, " for keys %hash;
+					my @POSArray;
+					my @wordArray;
+					my @tempArray2;
+					@tempArray = ();
+					for(my $x=0;$x<@textArray;$x++){
+							@tempArray = split/\/\w+/, $textArray[$x];
+							push(@wordArray, @tempArray);
+							@tempArray2 = ($textArray[$x] =~ /\w+$/g);
+							push(@POSArray, @tempArray2);
+							}
+							my %hash;
+							my @pushArray = ();
+							for(my $x=0;$x<@textArray;$x++){
+									$hash{$POSArray[$x]}{$wordArray[$x]}+=1;
+									}
+									my @testArray;
+									@lineArray = ();
+									$filename = $ARGV[1];
+									open(my $fh2, "<", $filename) or die $!;
+											while(my $line = <$fh2>){
+												chomp $line;
+												@lineArray = ($line =~ /\w+|[_.,!?"':;\+\-\*]/g);
+												push(@testArray, @lineArray);
+												}
+												close $fh2;
 
-# print scalar @{$hash{'SYM'}};
+												#print Dumper @testArray;
 
-# for(my $x=0;$x<1;$x++){
-	# print "\n$hash{'SYM'}[$x]";
-# }
-
-# my $size = keys %hash;
-# print "\n$size";
-
-#print Dumper \@testArray;
-#print Dumper \%hash;
-#print Dumper \@POSArray;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+												my @keyList = keys %hash;
+												my $keyListSize = @keyList;
+												my $wordCount=0;
+												my $pos;
+												my $key;
+												my $test;
+												my $posKey;
+												for(my $x=0;$x<@testArray;$x++){
+														for(my $y=0;$y<@keyList;$y++){
+																if(exists $hash{$keyList[$y]}{$testArray[$x]}){
+																if($wordCount<$hash{$keyList[$y]}{$testArray[$x]}){
+																		$wordCount=$hash{$keyList[$y]}{$testArray[$x]};
+																		print "$testArray[$x]/$keyList[$y] ";
+																		}}
+																		#add NN tag for words that were not trained that show up in test
+																		}
+																		if($testArray[$x] =~ /\.|\,|\:|\;|\'|\"|\!|\?|\-|\+|\*/){
+																		print "$testArray[$x]/$testArray[$x] ";
+																		}
+																		$wordCount=0;}
+																		#print "--------------\n";																									
